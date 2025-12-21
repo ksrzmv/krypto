@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"os"
 
+	"golang.org/x/crypto/ssh/terminal"
+
 	"krypto/krypto"
 )
 
@@ -17,10 +19,15 @@ func main() {
 	message := "oleg"
 
 	data := []byte(message)
-	key := []byte("oleg")
+	fmt.Printf("Enter secret key:\n> ")
+	key, err := terminal.ReadPassword(0)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("\n")
 	encryptedData := krypto.Encrypt(data, key)
 	binary.Write(os.Stdout, binary.LittleEndian, encryptedData)
-	fmt.Println()
+	fmt.Printf("\n")
 	decryptedData := krypto.Decrypt(encryptedData, key)
 	binary.Write(os.Stdout, binary.LittleEndian, decryptedData)
 }
