@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/crypto/ssh/terminal"
 
-	"krypto/krypto"
+	"pkg/krypto"
 )
 
 func main() {
