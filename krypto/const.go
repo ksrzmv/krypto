@@ -21,5 +21,6 @@ type Mode byte
 const (
 	Enc Mode = 0
 	Dec Mode = 1
+	Key Mode = 2
 )
 
