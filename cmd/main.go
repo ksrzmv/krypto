@@ -6,6 +6,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"os"
@@ -18,20 +19,46 @@ import (
 func main() {
 	var m krypto.Mode = krypto.Enc
 	isDecrypt := flag.Bool("d", false, "enter decryption mode")
+	isKey := flag.Bool("k", false, "enter key generation mode")
+	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.xch-key'")
 	filePath := os.Args[len(os.Args)-1]
+	keyFilePath := "./.xch-key"
+
 	flag.Parse()
+	if *isDecrypt && *isKey == true {
+		fmt.Println("choose either -d, or -k")
+		return
+	}
 	if *isDecrypt == true {
 		m = krypto.Dec
 	}
+	if *isKey == true {
+		m = krypto.Key
+	}
+
+	if m == krypto.Key {
+		key := krypto.GenerateKey(255)
+		binary.Write(os.Stdout, binary.LittleEndian, key)
+		return
+	}
+
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Enter secret key:\n> ")
-	key, err := terminal.ReadPassword(0)
-	if err != nil {
-		panic(err)
+	var key []byte
+	if *readKeyFromFile == false {
+		fmt.Printf("Enter secret key:\n> ")
+		key, err = terminal.ReadPassword(0)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		key, err = os.ReadFile(keyFilePath)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if m == krypto.Enc {
