@@ -7,22 +7,23 @@ package krypto
 
 func Encrypt(data []byte, key []byte) []byte {
 	prepData := dataToUintArray(data, Enc)
-	expandedKey := keyExpansion(key)
+	S := keyExpansion(key)
 
 	for i := 0; i < len(prepData) - 1; i += 2 {
-		prepData[i] += expandedKey[0]
-		prepData[i+1] += expandedKey[1]
-		for j := 1; j < KR_ROUNDS; j += 1 {
-			prepData[i] ^= prepData[i+1]
-			prepData[i] = Rotl(prepData[i], prepData[i+1] & KR_MODULUS)
-			prepData[i] += expandedKey[2*j]
-			prepData[i+1] ^= prepData[i]
-			prepData[i+1] = Rotl(prepData[i+1], prepData[i] & KR_MODULUS)
-			prepData[i+1] += expandedKey[2*j+1]
-			// debugging
-		  //fmt.Printf("block: %d round: %d A: %016x\n", i, j, prepData[i])
-		  //fmt.Printf("block: %d round: %d B: %016x\n", i+1, j, prepData[i+1])
+		A := prepData[i]
+		B := prepData[i+1]
+		A += S[0]
+		B += S[1]
+		for j := 1; j <= KR_ROUNDS; j++ {
+			A = A ^ B
+			A = Rotl(A, B)
+			A += S[2*j]
+			B = B ^ A
+			B = Rotl(B, A)
+			B += S[2*j+1]
 		}
+		prepData[i] = A
+		prepData[i+1] = B
 	}
 
 	return dataFromUintArray(prepData, Enc)
@@ -30,19 +31,23 @@ func Encrypt(data []byte, key []byte) []byte {
 
 func Decrypt(data []byte, key []byte) []byte {
 	prepData := dataToUintArray(data, Dec)
-	expandedKey := keyExpansion(key)
+	S := keyExpansion(key)
 
 	for i := 0; i < len(prepData) - 1; i += 2 {
-		for j := KR_ROUNDS-1; j > 0; j -= 1 {
-			prepData[i+1] -= expandedKey[2*j+1]
-			prepData[i+1] = Rotr(prepData[i+1], prepData[i] & KR_MODULUS)
-			prepData[i+1] ^= prepData[i]
-			prepData[i] -= expandedKey[2*j]
-			prepData[i] = Rotr(prepData[i], prepData[i+1] & KR_MODULUS)
-			prepData[i] ^= prepData[i+1]
+		A := prepData[i]
+		B := prepData[i+1]
+		for j := KR_ROUNDS; j >= 1; j-- {
+			B -= S[2*j+1]
+			B = Rotr(B, A)
+			B ^= A
+			A -= S[2*j]
+			A = Rotr(A, B)
+			A ^= B
 		}
-		prepData[i+1] -= expandedKey[1]
-		prepData[i] -= expandedKey[0]
+		B -= S[1]
+		A -= S[0]
+		prepData[i+1] = B
+		prepData[i] = A
 	}
 
 	return dataFromUintArray(prepData, Dec)

@@ -14,9 +14,7 @@ import (
 )
 
 func main() {
-	//message := "10513u5[ewjt'au9-t215u82315rh5 23;15h23i5=12 3uy5h02358h21p58 h2p5h23185h23[58h 21-5 8u-5 h132-5b "
 	message := "oleg"
-	//message := "oleg"
 
 	data := []byte(message)
 	key := []byte("oleg")

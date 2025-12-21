@@ -1,7 +1,7 @@
 package krypto
 
 const (
-	KR_ROUNDS						= 1
+	KR_ROUNDS						= 255
 	// explaination of KR_WORD_SIZE calculation
 	// ^uint(0) - uint value with all bits set (bit inversion; e.g. ^(0b0101) = 0b1010)
 	// '>> 63' will be 0 for 32-bit arch and 1 for 64-bit arch
