@@ -1,3 +1,3 @@
-module github.com/ksrzmv/krypto/pkg/krypto
+module krypto
 
 go 1.25.1
