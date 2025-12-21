@@ -17,13 +17,13 @@ import (
 
 func main() {
 	var m krypto.Mode = krypto.Enc
-	isDecrypt := flag.Bool("m", false, "enter decryption mode")
-	filePath := flag.String("file", "", "file encrypt to/decrypt from")
+	isDecrypt := flag.Bool("d", false, "enter decryption mode")
+	filePath := os.Args[len(os.Args)-1]
 	flag.Parse()
 	if *isDecrypt == true {
 		m = krypto.Dec
 	}
-	data, err := os.ReadFile(*filePath)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		panic(err)
 	}
@@ -36,14 +36,14 @@ func main() {
 
 	if m == krypto.Enc {
 	  encryptedData := krypto.Encrypt(data, key)
-	  encFile := *filePath + ".enc"
+	  encFile := filePath + ".enc"
 	  _ = os.WriteFile(encFile, encryptedData, 0666)
 	  //binary.Write(encFd, binary.LittleEndian, encryptedData)
 	}
 
 	if m == krypto.Dec {
 		decryptedData := krypto.Decrypt(data, key)
-		decFile := *filePath + ".dec"
+		decFile := filePath + ".dec"
 		_ = os.WriteFile(decFile, decryptedData, 0666)
 	}
 	//binary.Write(decFd, binary.LittleEndian, decryptedData)

@@ -41,7 +41,11 @@ func dataFromUintArray(data []uint, m Mode) []byte {
 	byteDataLength := uint(len(data)) * KR_WORD_SIZE_BYTES
 	// TODO: strip trail zeroes when decryption
 	if m == Dec {
-		byteDataLength -= uint(byte(data[len(data)-1]))
+		delta := uint(byte(data[len(data)-1]))
+		if delta > 16 {
+			panic("invalid decryption")
+		}
+		byteDataLength -= delta
 	}
 	byteData := make([]byte, byteDataLength)
 	for i := 0; uint(i) < byteDataLength; i++ {
