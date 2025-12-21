@@ -12,6 +12,8 @@ func Encrypt(data []byte, key []byte) []byte {
 	for i := 0; i < len(prepData) - 1; i += 2 {
 		A := prepData[i]
 		B := prepData[i+1]
+
+		// start block encryption
 		A += S[0]
 		B += S[1]
 		for j := 1; j <= KR_ROUNDS; j++ {
@@ -22,6 +24,8 @@ func Encrypt(data []byte, key []byte) []byte {
 			B = Rotl(B, A)
 			B += S[2*j+1]
 		}
+		// end block encryption
+
 		prepData[i] = A
 		prepData[i+1] = B
 	}
@@ -36,6 +40,8 @@ func Decrypt(data []byte, key []byte) []byte {
 	for i := 0; i < len(prepData) - 1; i += 2 {
 		A := prepData[i]
 		B := prepData[i+1]
+
+		// start block decryption
 		for j := KR_ROUNDS; j >= 1; j-- {
 			B -= S[2*j+1]
 			B = Rotr(B, A)
@@ -46,6 +52,8 @@ func Decrypt(data []byte, key []byte) []byte {
 		}
 		B -= S[1]
 		A -= S[0]
+		// end block decryption
+
 		prepData[i+1] = B
 		prepData[i] = A
 	}

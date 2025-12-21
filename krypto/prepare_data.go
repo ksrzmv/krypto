@@ -29,7 +29,7 @@ func dataToUintArray(data []byte, m Mode) []uint {
 
 	preparedData := make([]uint, wordBlocks)
 	for counter = 0; counter < dataLength; counter++ {
-		preparedData[counter/KR_WORD_SIZE_BYTES] += uint(data[counter]) << (56 - (counter % KR_WORD_SIZE_BYTES)*KR_WORD_SIZE_BYTES)
+		preparedData[counter/KR_WORD_SIZE_BYTES] += uint(data[counter]) << (KR_WORD_SIZE - 8 - (counter % KR_WORD_SIZE_BYTES)*KR_WORD_SIZE_BYTES)
 	}
 
 	preparedData[wordBlocks-1] += delta
@@ -42,7 +42,7 @@ func dataFromUintArray(data []uint, m Mode) []byte {
 	// TODO: strip trail zeroes when decryption
 	if m == Dec {
 		delta := uint(byte(data[len(data)-1]))
-		if delta > 16 {
+		if delta > KR_DWORD_SIZE_BYTES {
 			panic("invalid decryption")
 		}
 		byteDataLength -= delta
