@@ -13,6 +13,9 @@ func alignWord(x uint) uint {
 
 func dataToUintArray(data []byte, m Mode) []uint {
 	dataLength := uint(len(data))
+	if m == Dec && dataLength % KR_DWORD_SIZE_BYTES != 0 {
+		panic("integrity check error. file's size for decryption must be divisible by 16")
+	}
 	wordBlocks := alignWord(dataLength)
 	if m == Enc && dataLength % KR_DWORD_SIZE_BYTES == 0 {
 		wordBlocks += 2
