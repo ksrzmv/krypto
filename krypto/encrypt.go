@@ -13,6 +13,11 @@ func Encrypt(data []byte, key []byte) []byte {
 		A := prepData[i]
 		B := prepData[i+1]
 
+		if i > 1 {
+			A ^= prepData[i-2]
+			B ^= prepData[i-1]
+		}
+
 		// start block encryption
 		A += S[0]
 		B += S[1]
@@ -37,9 +42,16 @@ func Decrypt(data []byte, key []byte) []byte {
 	prepData := dataToUintArray(data, Dec)
 	S := keyExpansion(key)
 
+	feedbackA := uint(0)
+	feedbackB := uint(0)
+	var prevA, prevB uint
+
 	for i := 0; i < len(prepData) - 1; i += 2 {
 		A := prepData[i]
 		B := prepData[i+1]
+
+		prevA = A
+		prevB = B
 
 		// start block decryption
 		for j := KR_ROUNDS; j >= 1; j-- {
@@ -53,6 +65,12 @@ func Decrypt(data []byte, key []byte) []byte {
 		B -= S[1]
 		A -= S[0]
 		// end block decryption
+
+	 	B ^= feedbackB
+	 	A ^= feedbackA
+
+		feedbackA = prevA
+		feedbackB = prevB
 
 		prepData[i+1] = B
 		prepData[i] = A
