@@ -10,7 +10,6 @@ func Encrypt(data []byte, key []byte) []byte {
 	S := keyExpansion(key)
 
 	// enrich data with IV
-
 	ivA := GenerateKey(KR_WORD_SIZE_BYTES)
 	ivB := GenerateKey(KR_WORD_SIZE_BYTES)
 
@@ -24,7 +23,6 @@ func Encrypt(data []byte, key []byte) []byte {
 		ivData[idx+2] = val
 	}
 	prepData = ivData
-
 	// -----
 
 
@@ -94,17 +92,6 @@ func Decrypt(data []byte, key []byte) []byte {
 		prepData[i+1] = B
 		prepData[i] = A
 	}
-
-	// remove iv from decrypted data
-
-	//ivDataLength := len(prepData)-2
-	//ivData := make([]uint, ivDataLength)
-	//for i := 0; i < ivDataLength; i++ {
-	//	ivData[i] = prepData[i+2]
-	//}
-	//prepData = ivData
-
-	//
 
 	return dataFromUintArray(prepData[2:], Dec)
 }

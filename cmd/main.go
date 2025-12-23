@@ -22,7 +22,7 @@ func main() {
 	isKey := flag.Bool("k", false, "enter key generation mode")
 	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.xch-key'")
 	filePath := os.Args[len(os.Args)-1]
-	keyFilePath := "./.xch-key"
+	keyFilePath := "./.kr-dek"
 
 	flag.Parse()
 	if *isDecrypt && *isKey == true {
@@ -72,6 +72,6 @@ func main() {
 		decryptedData := krypto.Decrypt(data, key)
 		decFile := filePath + ".dec"
 		_ = os.WriteFile(decFile, decryptedData, 0666)
+	  //binary.Write(decFd, binary.LittleEndian, decryptedData)
 	}
-	//binary.Write(decFd, binary.LittleEndian, decryptedData)
 }
