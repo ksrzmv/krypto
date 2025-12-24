@@ -14,11 +14,14 @@ func GenerateKey(length int) []byte {
 	key := make([]byte, length)
 	n, err := randomFd.Read(key)
 	if err != nil {
+		randomFd.Close()
 		panic(err)
 	}
 	if n != length {
+		randomFd.Close()
 		panic("error read from random stream")
 	}
 
+	randomFd.Close()
 	return key
 }
