@@ -20,7 +20,7 @@ func main() {
 	var m krypto.Mode = krypto.Enc
 	isDecrypt := flag.Bool("d", false, "enter decryption mode")
 	isKey := flag.Bool("k", false, "enter key generation mode")
-	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.xch-key'")
+	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
 	filePath := os.Args[len(os.Args)-1]
 	keyFilePath := "./.kr-dek"
 
