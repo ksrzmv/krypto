@@ -49,7 +49,10 @@ func main() {
 	if *read_key_from_file == false {
 		key = krypto.ReadKeyFromTerminal()
 	} else {
-		key = krypto.ReadKeyFromFile(key_filepath)
+		key, err = krypto.ReadKeyFromFile(key_filepath)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if m == krypto.Enc {

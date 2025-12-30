@@ -29,12 +29,12 @@ func GenerateKey(length int) []byte {
 	return key
 }
 
-func ReadKeyFromFile(key_filepath string) []byte {
+func ReadKeyFromFile(key_filepath string) ([]byte, error) {
 	key, err := os.ReadFile(key_filepath)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return key
+	return key, nil
 }
 
 func ReadKeyFromTerminal() []byte {
