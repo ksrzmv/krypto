@@ -1,7 +1,10 @@
 package krypto
 
 import (
+	"fmt"
 	"os"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 func GenerateKey(length int) []byte {
@@ -23,5 +26,23 @@ func GenerateKey(length int) []byte {
 	}
 
 	randomFd.Close()
+	return key
+}
+
+func ReadKeyFromFile(key_filepath string) []byte {
+	key, err := os.ReadFile(key_filepath)
+	if err != nil {
+		panic(err)
+	}
+	return key
+}
+
+func ReadKeyFromTerminal() []byte {
+	fmt.Printf("Enter secret key:\n> ")
+	key, err := terminal.ReadPassword(0)
+	if err != nil {
+		panic(err)
+	}
+
 	return key
 }

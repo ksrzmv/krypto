@@ -11,28 +11,26 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/crypto/ssh/terminal"
-
 	"krypto/krypto"
 )
 
 func main() {
 	var m krypto.Mode = krypto.Enc
-	isDecrypt := flag.Bool("d", false, "enter decryption mode")
-	isKey := flag.Bool("k", false, "enter key generation mode")
-	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
-	filePath := os.Args[len(os.Args)-1]
-	keyFilePath := "./.kr-dek"
+	is_decrypt := flag.Bool("d", false, "enter decryption mode")
+	is_key := flag.Bool("k", false, "enter key generation mode")
+	read_key_from_file := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
+	file_path := os.Args[len(os.Args)-1]
+	key_filepath := "./.kr-dek"
 
 	flag.Parse()
-	if *isDecrypt && *isKey == true {
+	if *is_decrypt && *is_key == true {
 		fmt.Println("choose either -d, or -k")
 		return
 	}
-	if *isDecrypt == true {
+	if *is_decrypt == true {
 		m = krypto.Dec
 	}
-	if *isKey == true {
+	if *is_key == true {
 		m = krypto.Key
 	}
 
@@ -42,36 +40,29 @@ func main() {
 		return
 	}
 
-	data, err := os.ReadFile(filePath)
+	data, err := os.ReadFile(file_path)
 	if err != nil {
 		panic(err)
 	}
 
 	var key []byte
-	if *readKeyFromFile == false {
-		fmt.Printf("Enter secret key:\n> ")
-		key, err = terminal.ReadPassword(0)
-		if err != nil {
-			panic(err)
-		}
+	if *read_key_from_file == false {
+		key = krypto.ReadKeyFromTerminal()
 	} else {
-		key, err = os.ReadFile(keyFilePath)
-		if err != nil {
-			panic(err)
-		}
+		key = krypto.ReadKeyFromFile(key_filepath)
 	}
 
 	if m == krypto.Enc {
-	  encryptedData := krypto.Encrypt(data, key)
-	  encFile := filePath + ".enc"
-	  _ = os.WriteFile(encFile, encryptedData, 0666)
-	  //binary.Write(encFd, binary.LittleEndian, encryptedData)
+	  encrypted_data := krypto.Encrypt(data, key)
+	  enc_file := file_path + ".enc"
+	  _ = os.WriteFile(enc_file, encrypted_data, 0666)
+	  //binary.Write(encFd, binary.LittleEndian, encrypted_data)
 	}
 
 	if m == krypto.Dec {
-		decryptedData := krypto.Decrypt(data, key)
-		decFile := filePath + ".dec"
-		_ = os.WriteFile(decFile, decryptedData, 0666)
-	  //binary.Write(decFd, binary.LittleEndian, decryptedData)
+		decrypted_data := krypto.Decrypt(data, key)
+		dec_file := file_path + ".dec"
+		_ = os.WriteFile(dec_file, decrypted_data, 0666)
+	  //binary.Write(decFd, binary.LittleEndian, decrypted_data)
 	}
 }
