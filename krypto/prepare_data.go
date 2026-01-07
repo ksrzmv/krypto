@@ -12,46 +12,45 @@ func alignWord(x uint) uint {
 }
 
 func dataToUintArray(data []byte, m Mode) []uint {
-	dataLength := uint(len(data))
-	if m == Dec && dataLength % KR_DWORD_SIZE_BYTES != 0 {
+	data_length := uint(len(data))
+	if m == Dec && data_length % KR_DWORD_SIZE_BYTES != 0 {
 		panic("integrity check error. file's size for decryption must be divisible by 16")
 	}
-	wordBlocks := alignWord(dataLength)
-	if m == Enc && dataLength % KR_DWORD_SIZE_BYTES == 0 {
-		wordBlocks += 2
-	} else if m == Enc && wordBlocks % 2 != 0 {
-		wordBlocks += 1
+	word_blocks := alignWord(data_length)
+	if m == Enc && data_length % KR_DWORD_SIZE_BYTES == 0 {
+		word_blocks += 2
+	} else if m == Enc && word_blocks % 2 != 0 {
+		word_blocks += 1
 	}
 
-	delta := wordBlocks * KR_WORD_SIZE_BYTES - dataLength
+	delta := word_blocks * KR_WORD_SIZE_BYTES - data_length
 
 	var counter uint
 
-	preparedData := make([]uint, wordBlocks)
-	for counter = 0; counter < dataLength; counter++ {
-		preparedData[counter/KR_WORD_SIZE_BYTES] += uint(data[counter]) << (KR_WORD_SIZE - 8 - (counter % KR_WORD_SIZE_BYTES)*KR_WORD_SIZE_BYTES)
+	prepared_data := make([]uint, word_blocks)
+	for counter = 0; counter < data_length; counter++ {
+		prepared_data[counter/KR_WORD_SIZE_BYTES] += uint(data[counter]) << (KR_WORD_SIZE - 8 - (counter % KR_WORD_SIZE_BYTES)*KR_WORD_SIZE_BYTES)
 	}
 
-	preparedData[wordBlocks-1] += delta
+	prepared_data[word_blocks-1] += delta
 
-	return preparedData
+	return prepared_data
 }
 
 func dataFromUintArray(data []uint, m Mode) []byte {
-	byteDataLength := uint(len(data)) * KR_WORD_SIZE_BYTES
-	// TODO: strip trail zeroes when decryption
+	byte_data_length := uint(len(data)) * KR_WORD_SIZE_BYTES
 	if m == Dec {
 		delta := uint(byte(data[len(data)-1]))
 		if delta > KR_DWORD_SIZE_BYTES {
 			panic("invalid decryption")
 		}
-		byteDataLength -= delta
+		byte_data_length -= delta
 	}
-	byteData := make([]byte, byteDataLength)
-	for i := 0; uint(i) < byteDataLength; i++ {
-		byteData[i] = byte(Rotl(data[i/KR_WORD_SIZE_BYTES], uint(i+1) % KR_WORD_SIZE_BYTES * KR_WORD_SIZE_BYTES))
+	byte_data := make([]byte, byte_data_length)
+	for i := 0; uint(i) < byte_data_length; i++ {
+		byte_data[i] = byte(Rotl(data[i/KR_WORD_SIZE_BYTES], uint(i+1) % KR_WORD_SIZE_BYTES * KR_WORD_SIZE_BYTES))
 	}
 
-	return byteData
+	return byte_data
 }
 

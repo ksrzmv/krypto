@@ -8,24 +8,24 @@ import (
 )
 
 func GenerateKey(length int) []byte {
-	randomDataFilePath := "/dev/random"
-	randomFd, err := os.Open(randomDataFilePath)
+	random_data_filepath := "/dev/random"
+	random_fd, err := os.Open(random_data_filepath)
 	if err != nil {
 		panic("could not open random stream")
 	}
 
 	key := make([]byte, length)
-	n, err := randomFd.Read(key)
+	n, err := random_fd.Read(key)
 	if err != nil {
-		randomFd.Close()
+		random_fd.Close()
 		panic(err)
 	}
 	if n != length {
-		randomFd.Close()
+		random_fd.Close()
 		panic("error read from random stream")
 	}
 
-	randomFd.Close()
+	random_fd.Close()
 	return key
 }
 
