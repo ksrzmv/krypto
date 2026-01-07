@@ -36,7 +36,11 @@ func main() {
 	}
 
 	if m == krypto.Key {
-		key := krypto.GenerateKey(255)
+		key, err := krypto.GenerateKey(255)
+		if err != nil {
+			fmt.Println("could not generate key\nerror:", err)
+			return
+		}
 		binary.Write(os.Stdout, binary.LittleEndian, key)
 		return
 	}
@@ -59,7 +63,11 @@ func main() {
 	}
 
 	if m == krypto.Enc {
-	  encrypted_data := krypto.Encrypt(data, key)
+	  encrypted_data, err := krypto.Encrypt(data, key)
+		if err != nil {
+			fmt.Println("could not encrypt data\nerror:", err)
+			return
+		}
 	  enc_file := file_path + ".enc"
 	  _ = os.WriteFile(enc_file, encrypted_data, 0666)
 	  //binary.Write(encFd, binary.LittleEndian, encrypted_data)

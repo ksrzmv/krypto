@@ -7,26 +7,28 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-func GenerateKey(length int) []byte {
-	random_data_filepath := "/dev/random"
+func GenerateKey(length int) ([]byte, error) {
+	random_data_filepath := "/dev/random1"
 	random_fd, err := os.Open(random_data_filepath)
 	if err != nil {
-		panic("could not open random stream")
+		fmt.Println("could not open random stream\nerror:", err)
+		return nil, err
 	}
 
 	key := make([]byte, length)
 	n, err := random_fd.Read(key)
+
+	defer random_fd.Close()
 	if err != nil {
-		random_fd.Close()
-		panic(err)
+		fmt.Println("could not read from random fd\nerror:", err)
+		return nil, err
 	}
 	if n != length {
-		random_fd.Close()
-		panic("error read from random stream")
+		fmt.Println("invalid read length from random fd\nerror:", err)
+		return nil, err
 	}
 
-	random_fd.Close()
-	return key
+	return key, nil
 }
 
 func ReadKeyFromFile(key_filepath string) ([]byte, error) {

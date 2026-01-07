@@ -5,13 +5,24 @@
 
 package krypto
 
-func Encrypt(data []byte, key []byte) []byte {
+import "fmt"
+
+func Encrypt(data []byte, key []byte) ([]byte, error) {
 	prep_data := dataToUintArray(data, Enc)
 	S := keyExpansion(key)
 
 	// enrich data with IV
-	iv_A := GenerateKey(KR_WORD_SIZE_BYTES)
-	iv_B := GenerateKey(KR_WORD_SIZE_BYTES)
+	iv_A, err := GenerateKey(KR_WORD_SIZE_BYTES)
+	if err != nil {
+		fmt.Println("could not generate key\nerror:", err)
+		return nil, err
+	}
+
+	iv_B, err := GenerateKey(KR_WORD_SIZE_BYTES)
+	if err != nil {
+		fmt.Println("could not generate key\nerror:", err)
+		return nil, err
+	}
 
 	iv_data_length := len(prep_data) + 2
 	iv_data := make([]uint, iv_data_length)
@@ -52,7 +63,7 @@ func Encrypt(data []byte, key []byte) []byte {
 		prep_data[i+1] = B
 	}
 
-	return dataFromUintArray(prep_data, Enc)
+	return dataFromUintArray(prep_data, Enc), nil
 }
 
 func Decrypt(data []byte, key []byte) []byte {
