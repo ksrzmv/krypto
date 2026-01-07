@@ -16,8 +16,9 @@ import (
 
 func main() {
 	var m krypto.Mode = krypto.Enc
-	is_decrypt := flag.Bool("d", false, "enter decryption mode")
-	is_key := flag.Bool("k", false, "enter key generation mode")
+
+	is_decrypt := flag.Bool("d", false, "decryption mode")
+	is_key := flag.Bool("k", false, "keygen mode. generates 255 bytes key from /dev/random, outputs to stdout")
 	read_key_from_file := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
 	file_path := os.Args[len(os.Args)-1]
 	key_filepath := "./.kr-dek"
@@ -42,7 +43,8 @@ func main() {
 
 	data, err := os.ReadFile(file_path)
 	if err != nil {
-		panic(err)
+		fmt.Println("cannot read input file, exit\nerror:", err)
+		return
 	}
 
 	var key []byte
@@ -51,7 +53,8 @@ func main() {
 	} else {
 		key, err = krypto.ReadKeyFromFile(key_filepath)
 		if err != nil {
-			panic(err)
+			fmt.Println("cannot read key file, exit\nerror:", err)
+			return
 		}
 	}
 
