@@ -9,7 +9,7 @@ import (
 )
 
 func GenerateKey(length int) ([]byte, error) {
-	random_data_filepath := "/dev/random1"
+	random_data_filepath := "/dev/random"
 	random_fd, err := os.Open(random_data_filepath)
 	if err != nil {
 		return nil, err

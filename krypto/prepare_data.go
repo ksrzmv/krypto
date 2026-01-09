@@ -2,6 +2,7 @@ package krypto
 
 import (
 	"errors"
+	"fmt"
 )
 
 func alignWord(x uint) uint {
@@ -18,7 +19,7 @@ func alignWord(x uint) uint {
 func dataToUintArray(data []byte, m Mode) ([]uint, error) {
 	data_length := uint(len(data))
 	if m == Dec && data_length % KR_DWORD_SIZE_BYTES != 0 {
-		return nil, errors.New("integrity check error. file size for decryption must be divisible by 16 bytes")
+		return nil, fmt.Errorf("integrity check error: %w", errors.New("file size for decryption must be divisible by 16 bytes"))
 	}
 	word_blocks := alignWord(data_length)
 	if m == Enc && data_length % KR_DWORD_SIZE_BYTES == 0 {
@@ -46,7 +47,7 @@ func dataFromUintArray(data []uint, m Mode) ([]byte, error) {
 	if m == Dec {
 		delta := uint(byte(data[len(data)-1]))
 		if delta > KR_DWORD_SIZE_BYTES {
-			return nil, errors.New("invalid decryption")
+			return nil, errors.New("invalid decryption. possibly DEK is incorrect")
 		}
 		byte_data_length -= delta
 	}
