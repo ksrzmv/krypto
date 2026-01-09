@@ -1,5 +1,9 @@
 package krypto
 
+import (
+	"errors"
+)
+
 func alignWord(x uint) uint {
 	if x == 0 {
 		return 1
@@ -11,10 +15,10 @@ func alignWord(x uint) uint {
 	}
 }
 
-func dataToUintArray(data []byte, m Mode) []uint {
+func dataToUintArray(data []byte, m Mode) ([]uint, error) {
 	data_length := uint(len(data))
 	if m == Dec && data_length % KR_DWORD_SIZE_BYTES != 0 {
-		panic("integrity check error. file's size for decryption must be divisible by 16")
+		return nil, errors.New("integrity check error. file size for decryption must be divisible by 16 bytes")
 	}
 	word_blocks := alignWord(data_length)
 	if m == Enc && data_length % KR_DWORD_SIZE_BYTES == 0 {
@@ -34,15 +38,15 @@ func dataToUintArray(data []byte, m Mode) []uint {
 
 	prepared_data[word_blocks-1] += delta
 
-	return prepared_data
+	return prepared_data, nil
 }
 
-func dataFromUintArray(data []uint, m Mode) []byte {
+func dataFromUintArray(data []uint, m Mode) ([]byte, error) {
 	byte_data_length := uint(len(data)) * KR_WORD_SIZE_BYTES
 	if m == Dec {
 		delta := uint(byte(data[len(data)-1]))
 		if delta > KR_DWORD_SIZE_BYTES {
-			panic("invalid decryption")
+			return nil, errors.New("invalid decryption")
 		}
 		byte_data_length -= delta
 	}
@@ -51,6 +55,6 @@ func dataFromUintArray(data []uint, m Mode) []byte {
 		byte_data[i] = byte(Rotl(data[i/KR_WORD_SIZE_BYTES], uint(i+1) % KR_WORD_SIZE_BYTES * KR_WORD_SIZE_BYTES))
 	}
 
-	return byte_data
+	return byte_data, nil
 }
 

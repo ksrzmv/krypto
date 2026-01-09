@@ -1,6 +1,7 @@
 package krypto
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -11,7 +12,6 @@ func GenerateKey(length int) ([]byte, error) {
 	random_data_filepath := "/dev/random1"
 	random_fd, err := os.Open(random_data_filepath)
 	if err != nil {
-		fmt.Println("could not open random stream\nerror:", err)
 		return nil, err
 	}
 
@@ -20,12 +20,10 @@ func GenerateKey(length int) ([]byte, error) {
 
 	defer random_fd.Close()
 	if err != nil {
-		fmt.Println("could not read from random fd\nerror:", err)
 		return nil, err
 	}
 	if n != length {
-		fmt.Println("invalid read length from random fd\nerror:", err)
-		return nil, err
+		return nil, errors.New("invalid read length from random stream")
 	}
 
 	return key, nil

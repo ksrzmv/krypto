@@ -65,7 +65,7 @@ func main() {
 	if m == krypto.Enc {
 	  encrypted_data, err := krypto.Encrypt(data, key)
 		if err != nil {
-			fmt.Println("could not encrypt data\nerror:", err)
+			fmt.Println(err)
 			return
 		}
 	  enc_file := file_path + ".enc"
@@ -74,7 +74,11 @@ func main() {
 	}
 
 	if m == krypto.Dec {
-		decrypted_data := krypto.Decrypt(data, key)
+		decrypted_data, err := krypto.Decrypt(data, key)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 		dec_file := file_path + ".dec"
 		_ = os.WriteFile(dec_file, decrypted_data, 0666)
 	  //binary.Write(decFd, binary.LittleEndian, decrypted_data)

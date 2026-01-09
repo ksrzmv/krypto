@@ -5,22 +5,21 @@
 
 package krypto
 
-import "fmt"
-
 func Encrypt(data []byte, key []byte) ([]byte, error) {
-	prep_data := dataToUintArray(data, Enc)
+	prep_data, err := dataToUintArray(data, Enc)
+	if err != nil {
+		return nil, err
+	}
 	S := keyExpansion(key)
 
 	// enrich data with IV
 	iv_A, err := GenerateKey(KR_WORD_SIZE_BYTES)
 	if err != nil {
-		fmt.Println("could not generate key\nerror:", err)
 		return nil, err
 	}
 
 	iv_B, err := GenerateKey(KR_WORD_SIZE_BYTES)
 	if err != nil {
-		fmt.Println("could not generate key\nerror:", err)
 		return nil, err
 	}
 
@@ -63,11 +62,19 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 		prep_data[i+1] = B
 	}
 
-	return dataFromUintArray(prep_data, Enc), nil
+	result, err := dataFromUintArray(prep_data, Enc)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func Decrypt(data []byte, key []byte) []byte {
-	prep_data := dataToUintArray(data, Dec)
+func Decrypt(data []byte, key []byte) ([]byte, error) {
+	prep_data, err := dataToUintArray(data, Dec)
+	if err != nil {
+		return nil, err
+	}
 	S := keyExpansion(key)
 
 	feedback_A := uint(0)
@@ -104,6 +111,11 @@ func Decrypt(data []byte, key []byte) []byte {
 		prep_data[i] = A
 	}
 
-	return dataFromUintArray(prep_data[2:], Dec)
+	result, err := dataFromUintArray(prep_data[2:], Dec)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
