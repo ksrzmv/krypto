@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	"krypto/krypto"
+	"github.com/ksrzmv/krypto/krypto"
 )
 
 func main() {
