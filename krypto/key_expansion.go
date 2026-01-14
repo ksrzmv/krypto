@@ -1,5 +1,7 @@
 package krypto
 
+// implementation of RC5 key expansion algorithm.
+// for details see original RC5 whitepaper
 func keyExpansion(key []byte) []uint {
 	key_length := len(key)
 	byte_words_to_fill_key := int(alignWord(uint(key_length)))

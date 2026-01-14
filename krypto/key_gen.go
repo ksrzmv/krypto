@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
+// generate key from /dev/random stream
 func GenerateKey(length int) ([]byte, error) {
 	random_data_filepath := "/dev/random"
 	random_fd, err := os.Open(random_data_filepath)
@@ -29,6 +30,7 @@ func GenerateKey(length int) ([]byte, error) {
 	return key, nil
 }
 
+// read key from file
 func ReadKeyFromFile(key_filepath string) ([]byte, error) {
 	key, err := os.ReadFile(key_filepath)
 	if err != nil {
@@ -37,12 +39,15 @@ func ReadKeyFromFile(key_filepath string) ([]byte, error) {
 	return key, nil
 }
 
-func ReadKeyFromTerminal() []byte {
+// read key from terminal
+func ReadKeyFromTerminal() ([]byte, error) {
 	fmt.Printf("Enter secret key:\n> ")
+
+	// hidden input
 	key, err := terminal.ReadPassword(0)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return key
+	return key, nil
 }

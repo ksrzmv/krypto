@@ -6,23 +6,30 @@
 package krypto
 
 func Encrypt(data []byte, key []byte) ([]byte, error) {
+	// convert byte array to uint blocks
 	prep_data, err := dataToUintArray(data, Enc)
 	if err != nil {
 		return nil, err
 	}
+
+	// create expansion key array
 	S := keyExpansion(key)
 
-	// enrich data with IV
+	// enrich data with initialization vector (IV)
+
+	// generate 1 word of random data for first IV block
 	iv_A, err := GenerateKey(KR_WORD_SIZE_BYTES)
 	if err != nil {
 		return nil, err
 	}
 
+	// generate 1 word of random data for second IV block
 	iv_B, err := GenerateKey(KR_WORD_SIZE_BYTES)
 	if err != nil {
 		return nil, err
 	}
 
+	// length of enriched data = length of actual data + 2 iv blocks
 	iv_data_length := len(prep_data) + 2
 	iv_data := make([]uint, iv_data_length)
 	for i := 0; i < len(iv_A); i++ {
@@ -36,6 +43,7 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 	// -----
 
 
+	// range over all two-block batches
 	for i := 0; i < len(prep_data) - 1; i += 2 {
 		A := prep_data[i]
 		B := prep_data[i+1]
@@ -45,7 +53,7 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 			B ^= prep_data[i-1]
 		}
 
-		// start block encryption
+		// rc5 block encryption
 		A += S[0]
 		B += S[1]
 		for j := 1; j <= KR_ROUNDS; j++ {
@@ -62,6 +70,7 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 		prep_data[i+1] = B
 	}
 
+	// convert uint blocks to byte array
 	result, err := dataFromUintArray(prep_data, Enc)
 	if err != nil {
 		return nil, err
@@ -71,16 +80,21 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 }
 
 func Decrypt(data []byte, key []byte) ([]byte, error) {
+	// convert byte array to uint blocks
 	prep_data, err := dataToUintArray(data, Dec)
 	if err != nil {
 		return nil, err
 	}
+
+	// create expansion key array
 	S := keyExpansion(key)
 
+	// CBC mode feedback; initialized as 0 for first XOR
 	feedback_A := uint(0)
 	feedback_B := uint(0)
 	var prev_A, prev_B uint
 
+	// range over all two-block batches
 	for i := 0; i < len(prep_data) - 1; i += 2 {
 		A := prep_data[i]
 		B := prep_data[i+1]
@@ -88,7 +102,7 @@ func Decrypt(data []byte, key []byte) ([]byte, error) {
 		prev_A = A
 		prev_B = B
 
-		// start block decryption
+		// rc5 block decryption
 		for j := KR_ROUNDS; j >= 1; j-- {
 			B -= S[2*j+1]
 			B = Rotr(B, A)
@@ -104,6 +118,7 @@ func Decrypt(data []byte, key []byte) ([]byte, error) {
 	 	B ^= feedback_B
 	 	A ^= feedback_A
 
+		// feedback for next round is previous encrypted two-blocks batch
 		feedback_A = prev_A
 		feedback_B = prev_B
 
@@ -111,6 +126,7 @@ func Decrypt(data []byte, key []byte) ([]byte, error) {
 		prep_data[i] = A
 	}
 
+	// convert uint blocks to byte array
 	result, err := dataFromUintArray(prep_data[2:], Dec)
 	if err != nil {
 		return nil, err

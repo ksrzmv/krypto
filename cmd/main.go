@@ -53,7 +53,11 @@ func main() {
 
 	var key []byte
 	if *read_key_from_file == false {
-		key = krypto.ReadKeyFromTerminal()
+		key, err = krypto.ReadKeyFromTerminal()
+		if err != nil {
+			fmt.Println("cannot read key from terminal, exit\nerror:", err)
+			return
+		}
 	} else {
 		key, err = krypto.ReadKeyFromFile(key_filepath)
 		if err != nil {
