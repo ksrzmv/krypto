@@ -17,14 +17,8 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 
 	// enrich data with initialization vector (IV)
 
-	// generate 1 word of random data for first IV block
-	iv_A, err := GenerateKey(KR_WORD_SIZE_BYTES)
-	if err != nil {
-		return nil, err
-	}
-
-	// generate 1 word of random data for second IV block
-	iv_B, err := GenerateKey(KR_WORD_SIZE_BYTES)
+	// generate dword of random data for first IV block
+	iv, err := GenerateKey(KR_DWORD_SIZE_BYTES)
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +26,9 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 	// length of enriched data = length of actual data + 2 iv blocks
 	iv_data_length := len(prep_data) + 2
 	iv_data := make([]uint, iv_data_length)
-	for i := 0; i < len(iv_A); i++ {
-		iv_data[0] += uint(iv_A[i] << (56 - i * KR_WORD_SIZE_BYTES))
-		iv_data[1] += uint(iv_B[i] << (56 - i * KR_WORD_SIZE_BYTES))
+	for i := 0; i < len(iv)-KR_WORD_SIZE_BYTES; i++ {
+		iv_data[0] += uint(iv[i] << (56 - i * KR_WORD_SIZE_BYTES))
+		iv_data[1] += uint(iv[i+KR_WORD_SIZE_BYTES] << (56 - i * KR_WORD_SIZE_BYTES))
 	}
 	for idx, val := range prep_data {
 		iv_data[idx+2] = val
