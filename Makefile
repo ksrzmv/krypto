@@ -4,3 +4,6 @@ build:
 
 b:
 	make build
+
+test:
+	go test ./tests
