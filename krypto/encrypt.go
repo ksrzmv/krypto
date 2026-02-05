@@ -17,7 +17,7 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 
 	// enrich data with initialization vector (IV)
 
-	// generate dword of random data for first IV block
+	// generate dword of random data for IV block
 	iv, err := GenerateKey(KR_DWORD_SIZE_BYTES)
 	if err != nil {
 		return nil, err
