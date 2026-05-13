@@ -15,23 +15,23 @@ import (
 )
 
 func main() {
-	var m krypto.Mode = krypto.Enc
+	m := krypto.Enc
 
-	is_decrypt := flag.Bool("d", false, "decryption mode")
-	is_key := flag.Bool("k", false, "keygen mode. generates 255 bytes key from /dev/random, outputs to stdout")
-	read_key_from_file := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
-	file_path := os.Args[len(os.Args)-1]
-	key_filepath := "./.kr-dek"
+	isDecrypt := flag.Bool("d", false, "decryption mode")
+	isKey := flag.Bool("k", false, "keygen mode. generates 255 bytes key from /dev/random, outputs to stdout")
+	readKeyFromFile := flag.Bool("K", false, "switch to read key from file './.kr-dek'")
+	filePath := os.Args[len(os.Args)-1]
+	keyFilepath := "./.kr-dek"
 
 	flag.Parse()
-	if *is_decrypt && *is_key == true {
+	if *isDecrypt && *isKey == true {
 		fmt.Println("choose either -d, or -k")
 		return
 	}
-	if *is_decrypt == true {
+	if *isDecrypt == true {
 		m = krypto.Dec
 	}
-	if *is_key == true {
+	if *isKey == true {
 		m = krypto.Key
 	}
 
@@ -41,25 +41,29 @@ func main() {
 			fmt.Println("could not generate key\nerror:", err)
 			return
 		}
-		binary.Write(os.Stdout, binary.LittleEndian, key)
+		err = binary.Write(os.Stdout, binary.LittleEndian, key)
+		if err != nil {
+			fmt.Println("error write binary key to stdout\nerror:", err)
+			return
+		}
 		return
 	}
 
-	data, err := os.ReadFile(file_path)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Println("cannot read input file, exit\nerror:", err)
 		return
 	}
 
 	var key []byte
-	if *read_key_from_file == false {
+	if *readKeyFromFile == false {
 		key, err = krypto.ReadKeyFromTerminal()
 		if err != nil {
 			fmt.Println("cannot read key from terminal, exit\nerror:", err)
 			return
 		}
 	} else {
-		key, err = krypto.ReadKeyFromFile(key_filepath)
+		key, err = krypto.ReadKeyFromFile(keyFilepath)
 		if err != nil {
 			fmt.Println("cannot read key file, exit\nerror:", err)
 			return
@@ -67,24 +71,27 @@ func main() {
 	}
 
 	if m == krypto.Enc {
-	  encrypted_data, err := krypto.Encrypt(data, key)
+		encryptedData, err := krypto.Encrypt(data, key)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-	  enc_file := file_path + ".enc"
-	  _ = os.WriteFile(enc_file, encrypted_data, 0666)
-	  //binary.Write(encFd, binary.LittleEndian, encrypted_data)
+		encFile := filePath + ".enc"
+		err = os.WriteFile(encFile, encryptedData, 0666)
+		if err != nil {
+			fmt.Println("failed to write encrypted data to file\nerror:", err)
+		}
+		//binary.Write(encFd, binary.LittleEndian, encrypted_data)
 	}
 
 	if m == krypto.Dec {
-		decrypted_data, err := krypto.Decrypt(data, key)
+		decryptedData, err := krypto.Decrypt(data, key)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		dec_file := file_path + ".dec"
-		_ = os.WriteFile(dec_file, decrypted_data, 0666)
-	  //binary.Write(decFd, binary.LittleEndian, decrypted_data)
+		decFile := filePath + ".dec"
+		_ = os.WriteFile(decFile, decryptedData, 0666)
+		//binary.Write(decFd, binary.LittleEndian, decrypted_data)
 	}
 }
