@@ -9,11 +9,11 @@ import (
 	"github.com/ksrzmv/krypto/krypto"
 )
 
-func slices_equal[T comparable](s1, s2 []T) bool {
+func slicesEqual[T comparable](s1, s2 []T) bool {
 	if len(s1) != len(s2) {
 		return false
 	}
-	for i, _ := range s1 {
+	for i := range s1 {
 		if s1[i] != s2[i] {
 			return false
 		}
@@ -23,37 +23,37 @@ func slices_equal[T comparable](s1, s2 []T) bool {
 }
 
 func TestEncrypt(t *testing.T) {
-	max_data_len := 1000000
-	max_key_len := 256
-	tests_count := 1000
+	maxDataLength := 1000000
+	maxKeyLength := 256
+	testsCount := 1000
 
 	var wg sync.WaitGroup
 
-	for i := range tests_count {
-		data_length := rand.Intn(max_data_len)
-		data, err := krypto.GenerateKey(data_length)
+	for i := range testsCount {
+		dataLength := rand.Intn(maxDataLength)
+		data, err := krypto.GenerateKey(dataLength)
 		if err != nil {
-			t.Errorf("error generate data of size: %d", data_length)
+			t.Errorf("error generate data of size: %d", dataLength)
 		}
-		key_length := rand.Intn(max_key_len)
-		key, err := krypto.GenerateKey(key_length)
+		keyLength := rand.Intn(maxKeyLength)
+		key, err := krypto.GenerateKey(keyLength)
 		if err != nil {
-			t.Errorf("error generate key of size: %d", key_length)
+			t.Errorf("error generate key of size: %d", keyLength)
 		}
-		name := fmt.Sprintf("%d data length: %d, key length: %d", i,  data_length, key_length)
+		name := fmt.Sprintf("%d data length: %d, key length: %d", i, dataLength, keyLength)
 		wg.Add(1)
 		go t.Run(name, func(t *testing.T) {
 			defer wg.Done()
-			encrypted_data, err := krypto.Encrypt(data, key)
+			encryptedData, err := krypto.Encrypt(data, key)
 			if err != nil {
-				t.Errorf("error encrypt data. data len: %d, key len: %d", data_length, key_length)
+				t.Errorf("error encrypt data. data len: %d, key len: %d", dataLength, keyLength)
 			}
-			decrypted_data, err := krypto.Decrypt(encrypted_data, key)
+			decryptedData, err := krypto.Decrypt(encryptedData, key)
 			if err != nil {
-				t.Errorf("error decrypt data. data len: %d, key len: %d", data_length, key_length)
+				t.Errorf("error decrypt data. data len: %d, key len: %d", dataLength, keyLength)
 			}
 
-			if !slices_equal(decrypted_data, data) {
+			if !slicesEqual(decryptedData, data) {
 				t.Errorf("decrypted data doesn't match original data")
 			}
 		})
@@ -63,11 +63,11 @@ func TestEncrypt(t *testing.T) {
 }
 
 func BenchmarkEncrypt(b *testing.B) {
-	data_lengths := []int{1, 10, 100, 1000, 10000, 100000, 1000000}
-	key_length := 255
-	key, _ := krypto.GenerateKey(key_length)
+	dataLengths := []int{1, 10, 100, 1000, 10000, 100000, 1000000}
+	keyLength := 255
+	key, _ := krypto.GenerateKey(keyLength)
 
-	for _, ln := range data_lengths {
+	for _, ln := range dataLengths {
 		data, _ := krypto.GenerateKey(ln)
 		name := fmt.Sprintf("Data Length: %d", ln)
 		b.Run(name, func(b *testing.B) {
