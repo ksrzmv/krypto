@@ -8,18 +8,24 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-// generate key from /dev/random stream
+// GenerateKey - generates key from /dev/random data stream
 func GenerateKey(length int) ([]byte, error) {
-	random_data_filepath := "/dev/random"
-	random_fd, err := os.Open(random_data_filepath)
+	randomDataFilepath := "/dev/random"
+	randomFileDescriptor, err := os.Open(randomDataFilepath)
 	if err != nil {
 		return nil, err
 	}
 
 	key := make([]byte, length)
-	n, err := random_fd.Read(key)
+	n, err := randomFileDescriptor.Read(key)
 
-	defer random_fd.Close()
+	defer func(randomFileDescriptor *os.File) {
+		err := randomFileDescriptor.Close()
+		if err != nil {
+			fmt.Println("error close random file descriptor: ", err)
+		}
+	}(randomFileDescriptor)
+
 	if err != nil {
 		return nil, err
 	}
@@ -30,16 +36,16 @@ func GenerateKey(length int) ([]byte, error) {
 	return key, nil
 }
 
-// read key from file
-func ReadKeyFromFile(key_filepath string) ([]byte, error) {
-	key, err := os.ReadFile(key_filepath)
+// ReadKeyFromFile - reads key from file
+func ReadKeyFromFile(keyFilepath string) ([]byte, error) {
+	key, err := os.ReadFile(keyFilepath)
 	if err != nil {
 		return nil, err
 	}
 	return key, nil
 }
 
-// read key from terminal
+// ReadKeyFromTerminal - reads key from user input
 func ReadKeyFromTerminal() ([]byte, error) {
 	fmt.Printf("Enter secret key:\n> ")
 

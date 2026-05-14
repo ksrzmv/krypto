@@ -3,17 +3,17 @@ package krypto
 // implementation of RC5 key expansion algorithm.
 // for details see original RC5 whitepaper
 func keyExpansion(key []byte) []uint {
-	key_length := len(key)
-	byte_words_to_fill_key := int(alignWord(uint(key_length)))
-	L := make([]uint, byte_words_to_fill_key)
-	for i := key_length-1; i > -1; i-- {
+	keyLength := len(key)
+	numberByteWordsToFillKey := int(alignWord(uint(keyLength)))
+	L := make([]uint, numberByteWordsToFillKey)
+	for i := keyLength - 1; i > -1; i-- {
 		L[i/KR_WORD_SIZE_BYTES] = (Rotl(L[i/KR_WORD_SIZE_BYTES], 8) + uint(key[i])) & KR_MODULUS
 	}
 
-	s_length := 2*(KR_ROUNDS + 1)
-	S := make([]uint, s_length)
+	sLength := 2 * (KR_ROUNDS + 1)
+	S := make([]uint, sLength)
 	S[0] = P
-	for i := 1; i < s_length; i++ {
+	for i := 1; i < sLength; i++ {
 		S[i] = (S[i-1] + Q) & KR_MODULUS
 	}
 
@@ -21,15 +21,14 @@ func keyExpansion(key []byte) []uint {
 	j := 0
 	A := uint(0)
 	B := uint(0)
-	for counter := 0; counter < 3 * max(s_length, byte_words_to_fill_key); counter++ {
-		S[i] = Rotl((S[i] + A + B) & KR_MODULUS, 3)
-		L[j] = Rotl((L[j] + A + B) & KR_MODULUS, (A + B) & KR_MODULUS)
+	for counter := 0; counter < 3*max(sLength, numberByteWordsToFillKey); counter++ {
+		S[i] = Rotl((S[i]+A+B)&KR_MODULUS, 3)
+		L[j] = Rotl((L[j]+A+B)&KR_MODULUS, (A+B)&KR_MODULUS)
 		A = S[i]
 		B = L[j]
-		i = (i + 1) % s_length
-		j = (j + 1) % byte_words_to_fill_key
+		i = (i + 1) % sLength
+		j = (j + 1) % numberByteWordsToFillKey
 	}
 
 	return S
 }
-

@@ -7,7 +7,7 @@ package krypto
 
 func Encrypt(data []byte, key []byte) ([]byte, error) {
 	// convert byte array to uint blocks
-	prep_data, err := dataToUintArray(data, Enc)
+	preparedData, err := dataToUintArray(data, Enc)
 	if err != nil {
 		return nil, err
 	}
@@ -24,27 +24,26 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 	}
 
 	// length of enriched data = length of actual data + 2 iv blocks
-	iv_data_length := len(prep_data) + 2
-	iv_data := make([]uint, iv_data_length)
+	initializationVectorLength := len(preparedData) + 2
+	initializationVectorData := make([]uint, initializationVectorLength)
 	for i := 0; i < len(iv)-KR_WORD_SIZE_BYTES; i++ {
-		iv_data[0] += uint(iv[i] << (56 - i * KR_WORD_SIZE_BYTES))
-		iv_data[1] += uint(iv[i+KR_WORD_SIZE_BYTES] << (56 - i * KR_WORD_SIZE_BYTES))
+		initializationVectorData[0] += uint(iv[i] << (56 - i*KR_WORD_SIZE_BYTES))
+		initializationVectorData[1] += uint(iv[i+KR_WORD_SIZE_BYTES] << (56 - i*KR_WORD_SIZE_BYTES))
 	}
-	for idx, val := range prep_data {
-		iv_data[idx+2] = val
+	for idx, val := range preparedData {
+		initializationVectorData[idx+2] = val
 	}
-	prep_data = iv_data
+	preparedData = initializationVectorData
 	// -----
 
-
 	// range over all two-block batches
-	for i := 0; i < len(prep_data) - 1; i += 2 {
-		A := prep_data[i]
-		B := prep_data[i+1]
+	for i := 0; i < len(preparedData)-1; i += 2 {
+		A := preparedData[i]
+		B := preparedData[i+1]
 
 		if i > 1 {
-			A ^= prep_data[i-2]
-			B ^= prep_data[i-1]
+			A ^= preparedData[i-2]
+			B ^= preparedData[i-1]
 		}
 
 		// rc5 block encryption
@@ -60,12 +59,12 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 		}
 		// end block encryption
 
-		prep_data[i] = A
-		prep_data[i+1] = B
+		preparedData[i] = A
+		preparedData[i+1] = B
 	}
 
 	// convert uint blocks to byte array
-	result, err := dataFromUintArray(prep_data, Enc)
+	result, err := dataFromUintArray(preparedData, Enc)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +74,7 @@ func Encrypt(data []byte, key []byte) ([]byte, error) {
 
 func Decrypt(data []byte, key []byte) ([]byte, error) {
 	// convert byte array to uint blocks
-	prep_data, err := dataToUintArray(data, Dec)
+	preparedData, err := dataToUintArray(data, Dec)
 	if err != nil {
 		return nil, err
 	}
@@ -84,17 +83,17 @@ func Decrypt(data []byte, key []byte) ([]byte, error) {
 	S := keyExpansion(key)
 
 	// CBC mode feedback; initialized as 0 for first XOR
-	feedback_A := uint(0)
-	feedback_B := uint(0)
-	var prev_A, prev_B uint
+	cbcFeedbackA := uint(0)
+	cbcFeedbackB := uint(0)
+	var previousBlockA, previousBlockB uint
 
 	// range over all two-block batches
-	for i := 0; i < len(prep_data) - 1; i += 2 {
-		A := prep_data[i]
-		B := prep_data[i+1]
+	for i := 0; i < len(preparedData)-1; i += 2 {
+		A := preparedData[i]
+		B := preparedData[i+1]
 
-		prev_A = A
-		prev_B = B
+		previousBlockA = A
+		previousBlockB = B
 
 		// rc5 block decryption
 		for j := KR_ROUNDS; j >= 1; j-- {
@@ -109,23 +108,22 @@ func Decrypt(data []byte, key []byte) ([]byte, error) {
 		A -= S[0]
 		// end block decryption
 
-	 	B ^= feedback_B
-	 	A ^= feedback_A
+		B ^= cbcFeedbackB
+		A ^= cbcFeedbackA
 
 		// feedback for next round is previous encrypted two-blocks batch
-		feedback_A = prev_A
-		feedback_B = prev_B
+		cbcFeedbackA = previousBlockA
+		cbcFeedbackB = previousBlockB
 
-		prep_data[i+1] = B
-		prep_data[i] = A
+		preparedData[i+1] = B
+		preparedData[i] = A
 	}
 
 	// convert uint blocks to byte array
-	result, err := dataFromUintArray(prep_data[2:], Dec)
+	result, err := dataFromUintArray(preparedData[2:], Dec)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
 }
-
